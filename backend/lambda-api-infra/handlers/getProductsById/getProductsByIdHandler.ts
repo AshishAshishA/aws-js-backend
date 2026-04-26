@@ -4,7 +4,7 @@ import {products} from '../../../mocks/data';
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
     const productId = event.pathParameters?.productId;
-    const product = products.find(p => p.id === productId);
+    const product = products.find((p:any) => p.id === productId);
     if (!product) {
       return {
         statusCode: 404,

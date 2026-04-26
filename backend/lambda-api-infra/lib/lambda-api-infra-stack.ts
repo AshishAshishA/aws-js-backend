@@ -14,7 +14,8 @@ export class LambdaAndApiDeploymentStack extends Stack {
     //   visibilityTimeout: cdk.Duration.seconds(300)
     // });
     new DeployLambdaAndApiService(this, "lambdaAndApiDeployment")
-  }
+
+    new DeploySwaggerLambdaAndApiService(this, "swaggerLambdaAndApiDeployment")}
 }
 
 
@@ -42,6 +43,15 @@ export class DeployLambdaAndApiService extends Construct {
       code:aws_lambda.Code.fromAsset(path.join(__dirname, "../dist/handlers/getProductsById"))
     })
 
+    const lambdaFunction3 = new aws_lambda.Function(this, "swaggerUI", {
+      runtime:aws_lambda.Runtime.NODEJS_20_X,
+      memorySize:1024,
+      timeout:Duration.seconds(5),
+      functionName: 'swaggerUI',
+      handler:"swaggerHandler.handler",
+      code:aws_lambda.Code.fromAsset(path.join(__dirname, "../dist/handlers/swagger"))
+    })
+
     const api = new aws_apigateway.RestApi(this, "task2ApiGateWayPeer", {
         restApiName:"My API Gateway",
         description:"This API serves the Lambda functions"
@@ -49,6 +59,7 @@ export class DeployLambdaAndApiService extends Construct {
 
     const lambdaIntegration = new aws_apigateway.LambdaIntegration(lambdaFunction, {});
     const lambdaIntegration2 = new aws_apigateway.LambdaIntegration(lambdaFunction2, {});
+    const lambdaIntegration3 = new aws_apigateway.LambdaIntegration(lambdaFunction3, {});
 
     const productsResource = api.root.addResource("products");
     productsResource.addMethod("GET", lambdaIntegration);
@@ -56,6 +67,39 @@ export class DeployLambdaAndApiService extends Construct {
     const productByIdResource = productsResource.addResource("{productId}");
     productByIdResource.addMethod("GET", lambdaIntegration2);
 
+    const swaggerResource = api.root.addResource("swagger");
+    swaggerResource.addMethod("GET", lambdaIntegration3);
+
+  }
+
+
+}
+
+
+
+export class DeploySwaggerLambdaAndApiService extends Construct {
+  constructor(scope:Construct, id:string){
+    super(scope, id)
+
+
+    const lambdaFunction3 = new aws_lambda.Function(this, "swaggerUI", {
+      runtime:aws_lambda.Runtime.NODEJS_20_X,
+      memorySize:1024,
+      timeout:Duration.seconds(5),
+      functionName: 'swaggerUI',
+      handler:"swaggerHandler.handler",
+      code:aws_lambda.Code.fromAsset(path.join(__dirname, "../dist/handlers/swagger"))
+    })
+
+    const api = new aws_apigateway.RestApi(this, "swaggerApiGateWayPeer", {
+        restApiName:"My API Gateway",
+        description:"This API serves the Lambda functions"
+    });
+
+    const lambdaIntegration3 = new aws_apigateway.LambdaIntegration(lambdaFunction3, {});
+
+    const swaggerResource = api.root.addResource("swagger");
+    swaggerResource.addMethod("GET", lambdaIntegration3);
 
   }
 
